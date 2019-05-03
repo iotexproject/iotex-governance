@@ -1,0 +1,32 @@
+{
+  "name": "iotx-poll-contracts",
+  "version": "1.0.0",
+  "description": "voting on iotex mainnet",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "remixd -s .  --remix-ide https://remix.ethereum.org",
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iotexproject/IOTX-EIP-1202-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iotexproject/IOTX-EIP-1202-contracts/issues"
+  },
+  "homepage": "https://github.com/iotexproject/IOTX-EIP-1202-contracts#readme",
+  "dependencies": {
+    "bignumber.js": "^8.0.2",
+    "chai": "^4.2.0",
+    "chai-bignumber": "^3.0.0",
+    "ethereumjs-tx": "^1.3.7",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "web3": "^1.0.0-beta.48"
+  }
+}
