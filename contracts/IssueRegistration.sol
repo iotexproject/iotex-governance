@@ -27,7 +27,7 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
     function issueSheet() public view returns(address) {
         return sheet;
     }
-    
+
     function setIssueSheet(address _issueSheetAddr) public onlyWhitelisted {
         sheet = IssueSheet(_issueSheetAddr);
     }
@@ -62,7 +62,7 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
     function canRegister(address _issueAddr) public view returns (bool) {
         SingleIssue issue = SingleIssue(_issueAddr);
         return isValidVPS(issue.vpsAddress()) && issue.isNew() && issue.optionCount() > 0;
-    } 
+    }
 
     function withdraw() public onlyOwner payable {
         uint256 balance = address(this).balance;

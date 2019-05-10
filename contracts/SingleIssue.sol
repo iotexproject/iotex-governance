@@ -16,7 +16,7 @@ contract SingleIssue is Ownable {
     VotingPowerSystem public vps;
 
     mapping(uint => Ballot) public ballots;
-    mapping(address => uint[]) public voterBallots; 
+    mapping(address => uint[]) public voterBallots;
     uint public ballotCount;
 
     mapping(uint => string) public options;
@@ -72,7 +72,7 @@ contract SingleIssue is Ownable {
     function end() onlyOwner public {
         setStatus(false);
     }
-    
+
     function vpsAddress() public view returns (address) {
         return vps;
     }

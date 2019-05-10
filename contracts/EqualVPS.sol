@@ -4,7 +4,11 @@ import "./library/VotingPowerSystem.sol";
 import "./library/Whitelist.sol";
 
 contract EqualVPS is VotingPowerSystem, Whitelist {
-    mapping(address => bool) public qualifiedVoters;
+    struct Power {
+        bool eligible;
+        bool flag;
+    }
+    mapping(address => Power) public qualifiedVoters;
     address[] public voterAddrs;
     uint256 public numOfQualifiedVoters;
     bool public openToPublic;
@@ -25,12 +29,17 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
 
     function addQualifiedVotersInternal(address[] _voters) internal {
         for (uint i = 0; i < _voters.length; i++) {
-            if (!qualifiedVoters[_voters[i]]) {
-                numOfQualifiedVoters++;
-                qualifiedVoters[_voters[i]] = true;
-                emit SetVotingPower(_voters[i], 1);
+            if (!qualifiedVoters[_voters[i]].flag) {
                 voterAddrs.push(_voters[i]);
+                qualifiedVoters[_voters[i]] = Power(true, true);
+                numOfQualifiedVoters++;
+            } else {
+                if (!qualifiedVoters[_voters[i]].eligible) {
+                    qualifiedVoters[_voters[i]].eligible = true;
+                    numOfQualifiedVoters++;
+                }
             }
+            emit SetVotingPower(_voters[i], 1);
         }
     }
 
@@ -40,7 +49,12 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
 
     function deleteQualifiedVoters(address[] _voters) external onlyWhitelisted qualifiedVotersUpdatable {
         for (uint i = 0; i < _voters.length; i++) {
-            qualifiedVoters[_voters[i]] = false;
+            if (qualifiedVoters[_voters[i]].flag) {
+                if (qualifiedVoters[_voters[i]].eligible) {
+                    qualifiedVoters[_voters[i]].eligible = false;
+                    numOfQualifiedVoters--;
+                }
+            }
             emit SetVotingPower(_voters[i], 0);
         }
     }
@@ -58,14 +72,14 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
         }
         powers_ = new uint256[](_voters.length);
         for (uint i = 0; i < _voters.length; i++) {
-            if (openToPublic || qualifiedVoters[_voters[i]]) {
+            if (openToPublic || qualifiedVoters[_voters[i]].eligible) {
                 powers_[i] = 1;
             }
         }
     }
 
     function powerOf(address _voter) external view returns (uint256) {
-        if (openToPublic || qualifiedVoters[_voter]) {
+        if (openToPublic || qualifiedVoters[_voter].eligible) {
             return 1;
         }
         return 0;
