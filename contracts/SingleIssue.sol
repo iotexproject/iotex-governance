@@ -1,45 +1,43 @@
 pragma solidity ^0.4.22;
 
+import "./library/ERC1202.sol";
 import "./library/Ownable.sol";
 import "./library/VotingPowerSystem.sol";
 import "./library/SafeMath.sol";
 
-contract SingleIssue is Ownable {
+contract SingleIssue is ERC1202, Ownable {
     using SafeMath for uint;
+    event NewOption(uint256 index, string description);
     struct Ballot {
-        address voter;
-        uint option;
+        bool[] values;
+        bool flag;
     }
     string public title;
     string public description;
     address public proposer;
     VotingPowerSystem public vps;
 
-    mapping(uint => Ballot) public ballots;
-    mapping(address => uint[]) public voterBallots;
-    uint public ballotCount;
+    mapping(address => Ballot) public ballots;
+    address[] voterAddrs;
 
     mapping(uint => string) public options;
     uint public optionCount;
 
-    uint public votingFee;
     uint public status; // 0: new; 1: started; 2: paused; 3: ended
 
     bool public canRevote;
     bool public multiChoice;
 
-    constructor(address _vpsAddress, string _title, string _desc, bool _canRevote, bool _multiChoice, uint256 _votingFee) public {
+    constructor(address _vpsAddress, string _title, string _desc, bool _multiChoice, bool _canRevote) public {
         require(bytes(_title).length > 0 && bytes(_title).length < 20);
         require(bytes(_desc).length > 0);
         vps = VotingPowerSystem(_vpsAddress);
         title = _title;
         description = _desc;
-        votingFee = _votingFee;
         canRevote = _canRevote;
         multiChoice = _multiChoice;
         proposer = msg.sender;
         optionCount = 0;
-        ballotCount = 0;
         status = 0;
     }
 
@@ -52,6 +50,7 @@ contract SingleIssue is Ownable {
         }
         optionCount++;
         options[optionCount] = _option;
+        emit NewOption(optionCount, _option);
         return optionCount;
     }
 
@@ -93,24 +92,26 @@ contract SingleIssue is Ownable {
         return status == 3;
     }
 
-    function vote(uint _opt) external payable returns (bool) {
+    function vote(uint _opt) external returns (bool) {
         require(isActive());
         require(_opt > 0 && _opt <= optionCount);
-        require(msg.value >= votingFee);
-        if (multiChoice) {
-            ballots[ballotCount] = Ballot(msg.sender, _opt);
-            ballotCount++;
+        if (!ballots[msg.sender].flag) {
+            voterAddrs.push(msg.sender);
+            ballots[msg.sender] = Ballot(new bool[](optionCount), true);
+            ballots[msg.sender].values[_opt - 1] = true;
         } else {
-            if (voterBallots[msg.sender].length > 0) {
+            if (multiChoice) {
+                ballots[msg.sender].values[_opt - 1] = true;
+            } else {
                 if (!canRevote) {
                     return false;
                 }
-                ballots[voterBallots[msg.sender][0]].option = _opt;
-            } else {
-                ballots[ballotCount] = Ballot(msg.sender, _opt);
-                ballotCount++;
+                for (uint i = 0; i < optionCount; i++) {
+                    ballots[msg.sender].values[i] = i + 1 == _opt;
+                }
             }
         }
+        emit OnVote(msg.sender, _opt);
 
         return true;
     }
@@ -154,8 +155,14 @@ contract SingleIssue is Ownable {
 
     function ballotOf(address addr) external view returns (uint) {
         require(!multiChoice);
-        require(voterBallots[addr].length > 0);
-        return voterBallots[addr][0];
+        if (ballots[addr].flag) {
+            for (uint i = 0; i < optionCount; i++) {
+                if (ballots[addr].values[i]) {
+                    return i + 1;
+                }
+            }
+        }
+        return 0;
     }
 
     function weightOf(address addr) external view returns (uint) {
@@ -168,12 +175,10 @@ contract SingleIssue is Ownable {
 
     function weightedVoteCountsOf(uint _opt) external view returns (uint count_) {
         require(_opt > 0 && _opt <= optionCount);
-        for (uint i = 0; i < ballotCount; i++) {
-            if (ballots[i].option == _opt) {
-                uint power = vps.powerOf(ballots[i].voter);
-                if (power != 0) {
-                    count_ = SafeMath.add(count_, power);
-                }
+        for (uint i = 0; i < voterAddrs.length; i++) {
+            uint power = vps.powerOf(voterAddrs[i]);
+            if (power != 0 && ballots[voterAddrs[i]].values[_opt - 1]) {
+                count_ = SafeMath.add(count_, power);
             }
         }
         return count_;
@@ -182,10 +187,15 @@ contract SingleIssue is Ownable {
     function winningOption() external view returns (uint winningOption_) {
         uint[] memory counts = new uint[](optionCount);
         uint i;
-        for (i = 0; i < ballotCount; i++) {
-            uint power = vps.powerOf(ballots[i].voter);
+        for (i = 0; i < voterAddrs.length; i++) {
+            uint power = vps.powerOf(voterAddrs[i]);
             if (power != 0) {
-                counts[ballots[i].option - 1] = SafeMath.add(counts[ballots[i].option - 1], power);
+                Ballot storage b = ballots[voterAddrs[i]];
+                for (uint j = 0; j < optionCount; j++) {
+                    if (b.values[j]) {
+                        counts[j] = SafeMath.add(counts[j], power);
+                    }
+                }
             }
         }
         for (i = 0; i < optionCount; i++) {
@@ -196,7 +206,4 @@ contract SingleIssue is Ownable {
 
         return winningOption_;
     }
-
-    event OnVote(address indexed _from, uint _value);
-    event OnStatusChange(bool newIsOpen);
 }
