@@ -23,7 +23,7 @@ contract AdhocIssueSheet is Ownable, IssueSheet, Whitelist {
     }
 
     function addIssue(address _issue) public onlyWhitelisted returns (bool) {
-        if (!issues[_issue].flag) {
+        if (issues[_issue].flag) {
             return false;
         }
         issues[_issue] = Issue(issueCount, false, true);
@@ -32,16 +32,17 @@ contract AdhocIssueSheet is Ownable, IssueSheet, Whitelist {
         return true;
     }
 
-    function transferIssuesTo(address _issueSheetAddress) public onlyOwner {
-        IssueSheet newIssueSheet = IssueSheet(_issueSheetAddress);
-        for (uint i = 0; i < issueCount; i++) {
-            address issueAddr = issueAddresses[i];
-            SingleIssue issue = SingleIssue(issueAddr);
-            require(newIssueSheet.addIssue(issueAddr));
+    function transferIssueOwnership(uint256 _offset, uint256 _limit, address _issueSheetAddress) public onlyOwner {
+        if (_offset >= issueCount) {
+            return;
+        }
+        uint256 end = _offset + _limit;
+        if (end > issueCount) {
+            end = issueCount;
+        }
+        for (uint i = _offset; i < end; i++) {
+            SingleIssue issue = SingleIssue(issueAddresses[i]);
             issue.transferOwnership(_issueSheetAddress);
-            if (approved(issueAddr)) {
-                require(newIssueSheet.approve(issueAddr));
-            }
         }
     }
 
@@ -109,5 +110,19 @@ contract AdhocIssueSheet is Ownable, IssueSheet, Whitelist {
         }
         issue.end();
         return true;
+    }
+
+    function getIssues(uint256 _offset, uint256 _limit) public view returns (address[] issueAddrs_) {
+        if (_offset >= issueCount || _limit == 0) {
+            return issueAddrs_;
+        }
+        uint256 l = issueCount - _offset;
+        if (l > _limit) {
+            l = _limit;
+        }
+        issueAddrs_ = new address[](l);
+        for (uint256 i = 0; i < l; i++) {
+            issueAddrs_[i] = issueAddresses[_offset + i];
+        }
     }
 }
