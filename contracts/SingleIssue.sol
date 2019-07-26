@@ -96,16 +96,20 @@ contract SingleIssue is ERC1202, Ownable {
         require(isActive());
         require(_opt > 0 && _opt <= optionCount);
         if (!ballots[msg.sender].flag) {
+            //in case of first-voting 
             voterAddrs.push(msg.sender);
             ballots[msg.sender] = Ballot(new bool[](optionCount), true);
             ballots[msg.sender].values[_opt - 1] = true;
         } else {
             if (multiChoice) {
+                //multiple-choice 
                 ballots[msg.sender].values[_opt - 1] = true;
             } else {
                 if (!canRevote) {
+                    //single-choice, cannot re-vote 
                     return false;
                 }
+                //single-choice, can re-vote 
                 for (uint i = 0; i < optionCount; i++) {
                     ballots[msg.sender].values[i] = i + 1 == _opt;
                 }
@@ -184,6 +188,8 @@ contract SingleIssue is ERC1202, Ownable {
         return count_;
     }
 
+    //[Dorothy] Why didn't you use the weightedVoteCountsOf function?
+    //          maybe because is it more ineffcient? 
     function winningOption() external view returns (uint winningOption_) {
         uint[] memory counts = new uint[](optionCount);
         uint i;
