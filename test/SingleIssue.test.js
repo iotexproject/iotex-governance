@@ -1,4 +1,5 @@
 const EqualVPS = artifacts.require('EqualVPS.sol');
+const IssueProposal = artifacts.require('IssueProposal.sol');
 const SingleIssue = artifacts.require('SingleIssue.sol');
 const WeightedVPS = artifacts.require('WeightedVPS.sol');
 
@@ -13,8 +14,10 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, cannot-revote with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', false, false);
-            await addOptions(this.contract);
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', false, false);
+            await addOptions(prop);
+
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
         });
         describe('New', function () {
             it('check status', async function () {
@@ -60,16 +63,7 @@ contract('SingleIssue', function (accounts) {
                 assert.equal(await this.contract.isPaused(), false);
                 assert.equal(await this.contract.isEnded(), false);
             });
-            it('add option', async function () {
-                try {
-                    await this.contract.addOption('option 4');
-                    assert.fail();
-                } catch (e) {
-                    err = e;
-                }
-                assert.notEqual(err, undefined);
-                assert.equal(await this.contract.optionCount(), 3);
-            });
+            
             it('vote invalid option', async function () {
                 try {
                     await this.contract.vote(0, { from: accounts[1] });
@@ -103,8 +97,9 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, can-revote with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', false, true);
-            await addOptions(this.contract);
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', false, true);
+            await addOptions(prop);
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
             await this.contract.start();
         });
         it("revote", async function () {
@@ -123,8 +118,10 @@ contract('SingleIssue', function (accounts) {
     describe('multiple-choice with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', true, false);
-            await addOptions(this.contract);
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', true, false);
+            await addOptions(prop);
+
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
             await this.contract.start();
         });
         it('vote-multiple', async function () {
@@ -138,8 +135,11 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, cannot-revote with WeightedVPS', function () {
         beforeEach(async function () {
             const vps = await WeightedVPS.new(false, [accounts[1], accounts[2]], [2, 12]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', false, false);
-            await addOptions(this.contract);
+
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', false, false);
+            await addOptions(prop);
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
+        
         });
         describe('New', function () {
             it('check status', async function () {
@@ -184,16 +184,6 @@ contract('SingleIssue', function (accounts) {
                 assert.equal(await this.contract.isActive(), true);
                 assert.equal(await this.contract.isPaused(), false);
                 assert.equal(await this.contract.isEnded(), false);
-            });
-            it('add option', async function () {
-                try {
-                    await this.contract.addOption('option 4');
-                    assert.fail();
-                } catch (e) {
-                    err = e;
-                }
-                assert.notEqual(err, undefined);
-                assert.equal(await this.contract.optionCount(), 3);
             });
             it('vote invalid option', async function () {
                 try {
@@ -228,8 +218,10 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, can-revote with WeightedVPS', function () {
         beforeEach(async function () {
             const vps = await WeightedVPS.new(false, [accounts[1], accounts[2]], [2, 12]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', false, true);
-            await addOptions(this.contract);
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', false, true);
+            await addOptions(prop);
+
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
             await this.contract.start();
         });
         it("revote", async function () {
@@ -248,8 +240,10 @@ contract('SingleIssue', function (accounts) {
     describe('multiple-choice with WeightedVPS', function () {
         beforeEach(async function () {
             const vps = await WeightedVPS.new(false, [accounts[1], accounts[2]], [2, 12]);
-            this.contract = await SingleIssue.new(vps.address, 'title', 'description', true, false);
-            await addOptions(this.contract);
+            const prop = await IssueProposal.new(vps.address, 'title', 'description', true, false);
+            await addOptions(prop);
+
+            this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
             await this.contract.start();
         });
         it('vote-multiple', async function () {

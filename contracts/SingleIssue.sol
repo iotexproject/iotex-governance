@@ -4,54 +4,31 @@ import "./library/ERC1202.sol";
 import "./library/Ownable.sol";
 import "./library/VotingPowerSystem.sol";
 import "./library/SafeMath.sol";
+import "./IssueProposal.sol";
 
-contract SingleIssue is ERC1202, Ownable {
+contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     using SafeMath for uint;
-    event NewOption(uint256 index, string description);
     struct Ballot {
         bool[] values;
         bool flag;
     }
-    string public title;
-    string public description;
-    address public proposer;
-    VotingPowerSystem public vps;
 
     mapping(address => Ballot) public ballots;
     address[] voterAddrs;
 
-    mapping(uint => string) public options;
-    uint public optionCount;
-
+    address public proposer;
     uint public status; // 0: new; 1: started; 2: paused; 3: ended
 
-    bool public canRevote;
-    bool public multiChoice;
-
-    constructor(address _vpsAddress, string _title, string _desc, bool _multiChoice, bool _canRevote) public {
-        require(bytes(_title).length > 0 && bytes(_title).length < 20);
-        require(bytes(_desc).length > 0);
-        vps = VotingPowerSystem(_vpsAddress);
-        title = _title;
-        description = _desc;
-        canRevote = _canRevote;
-        multiChoice = _multiChoice;
+    constructor(address _proposal, address _vpsAddress, string _title, string _desc, bool _multiChoice, bool _canRevote) public 
+    IssueProposal( _vpsAddress, _title, _desc, _multiChoice, _canRevote){
         proposer = msg.sender;
-        optionCount = 0;
-        status = 0;
-    }
+        status = 0;   
 
-    function addOption(string _option) external onlyOwner returns (uint) {
-        require(isNew() && bytes(_option).length > 0);
-        for (uint i = 1; i <= optionCount; i++) {
-             if (keccak256(abi.encodePacked(_option)) == keccak256(abi.encodePacked(options[i]))) {
-                return i;
-            }
+        IssueProposal proposal = IssueProposal(_proposal);           
+        optionCount= proposal.optionCount();
+        for(uint i = 1; i <= optionCount; i++){
+            options[i] = proposal.optionDescription(i); 
         }
-        optionCount++;
-        options[optionCount] = _option;
-        emit NewOption(optionCount, _option);
-        return optionCount;
     }
 
     function pause() onlyOwner public {
@@ -72,9 +49,6 @@ contract SingleIssue is ERC1202, Ownable {
         setStatus(false);
     }
 
-    function vpsAddress() public view returns (address) {
-        return vps;
-    }
 
     function isNew() public view returns (bool) {
         return status == 0;
@@ -136,27 +110,6 @@ contract SingleIssue is ERC1202, Ownable {
         return true;
     }
 
-    function issueTitle() external view returns (string) {
-        return title;
-    }
-
-    function issueDescription() external view returns (string) {
-        return description;
-    }
-
-    function availableOptions() external view returns (uint[] options_) {
-        options_ = new uint[](optionCount);
-        for (uint i = 0; i < optionCount; i++) {
-            options_[i] = i + 1;
-        }
-        return options_;
-    }
-
-    function optionDescription(uint _opt) external view returns (string) {
-        require(_opt > 0 && _opt <= optionCount);
-        return options[_opt];
-    }
-
     function ballotOf(address addr) external view returns (uint) {
         require(!multiChoice);
         if (ballots[addr].flag) {
@@ -188,8 +141,6 @@ contract SingleIssue is ERC1202, Ownable {
         return count_;
     }
 
-    //[Dorothy] Why didn't you use the weightedVoteCountsOf function?
-    //          maybe because is it more ineffcient? 
     function winningOption() external view returns (uint winningOption_) {
         uint[] memory counts = new uint[](optionCount);
         uint i;
