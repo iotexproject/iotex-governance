@@ -4,6 +4,7 @@ import "./library/IssueSheet.sol";
 import "./library/Ownable.sol";
 import "./library/Pausable.sol";
 import "./library/Whitelist.sol";
+import "./IssueProposal.sol";
 import "./SingleIssue.sol";
 
 contract IssueRegistration is Ownable, Whitelist, Pausable  {
@@ -46,22 +47,23 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
         }
     }
 
-    function register(address _issueAddr) public whenNotPaused payable returns (bool success) {
+    function register(address _issueProposalAddr) public whenNotPaused payable returns (bool success) {
         require(msg.value >= registrationFee);
-        require(canRegister(_issueAddr));
-        SingleIssue issue = SingleIssue(_issueAddr);
-        require(address(this) == issue.owner());
-        if (sheet.addIssue(_issueAddr)) {
+        require(canRegister(_issueProposalAddr));
+        IssueProposal prop = IssueProposal(_issueProposalAddr);
+        SingleIssue issue = new SingleIssue(_issueProposalAddr, prop.vpsAddress(), 
+            prop.issueTitle(), prop.issueDescription(), prop.isMultiChoice(), prop.isCanRevote());
+        if (sheet.addIssue(address(issue))) {
             issue.transferOwnership(address(sheet));
-            emit Register(_issueAddr, msg.value);
+            emit Register(address(issue), msg.value);
             return true;
         }
         return false;
     }
 
-    function canRegister(address _issueAddr) public view returns (bool) {
-        SingleIssue issue = SingleIssue(_issueAddr);
-        return isValidVPS(issue.vpsAddress()) && issue.isNew() && issue.optionCount() > 0;
+    function canRegister(address _issueProposalAddr) public view returns (bool) {
+        IssueProposal proposal = IssueProposal(_issueProposalAddr);
+        return isValidVPS(proposal.vpsAddress()) && proposal.optionCount() > 0;
     }
 
     function withdraw() public onlyOwner payable {

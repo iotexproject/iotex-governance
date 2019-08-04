@@ -1,15 +1,19 @@
 const EqualVPS = artifacts.require('EqualVPS.sol');
 const SingleIssue = artifacts.require('SingleIssue.sol');
 const AdhocIssueSheet = artifacts.require('AdhocIssueSheet.sol');
+const IssueProposal = artifacts.require('IssueProposal.sol');
+
 
 contract('AdhocIssueSheet', function(accounts) {
     beforeEach(async function() {
         this.contract = await AdhocIssueSheet.new();
         const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
         await this.contract.addAddressToWhitelist(accounts[0]);
-        this.issue = await SingleIssue.new(vps.address, 'title', 'description', false, false);
-        await this.issue.addOption("no");
-        await this.issue.addOption("yes");
+        const prop = await IssueProposal.new(vps.address, 'title', 'description', false, false);
+        await prop.addOption("no");
+        await prop.addOption("yes");
+
+        this.issue = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
     });
     describe('addIssue', function() {
         it('no-permission', async function() {
