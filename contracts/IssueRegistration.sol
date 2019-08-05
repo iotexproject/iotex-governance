@@ -48,11 +48,15 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
     }
 
     function register(address _issueProposalAddr) public whenNotPaused payable returns (bool success) {
-        require(msg.value >= registrationFee);
-        require(canRegister(_issueProposalAddr));
+        require(msg.value >= registrationFee && canRegister(_issueProposalAddr));
         IssueProposal prop = IssueProposal(_issueProposalAddr);
-        SingleIssue issue = new SingleIssue(_issueProposalAddr, prop.vpsAddress(), 
-            prop.issueTitle(), prop.issueDescription(), prop.isMultiChoice(), prop.isCanRevote());
+        SingleIssue issue = new SingleIssue(
+            _issueProposalAddr,
+            prop.vpsAddress(),
+            prop.issueTitle(),
+            prop.issueDescription(),
+            prop.isMultiChoice(),
+            prop.isCanRevote());
         if (sheet.addIssue(address(issue))) {
             issue.transferOwnership(address(sheet));
             emit Register(address(issue), msg.value);

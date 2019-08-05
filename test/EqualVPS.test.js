@@ -6,8 +6,10 @@ contract('EqualVSP', function(accounts) {
         beforeEach(async function() {
             this.contract = await EqualVPS.new(false, false, [owner]);
             await this.contract.addAddressToWhitelist(owner);
+            assert.equal(await this.contract.paused(), true);
         });
         it("init-values", async function() {
+            await this.contract.resume();
             assert.equal(await this.contract.totalPower(), 1);
             assert.equal(await this.contract.powerOf(owner), 1);
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
@@ -17,6 +19,7 @@ contract('EqualVSP', function(accounts) {
             assert.equal(powers[1], 0);
         });
         it("not-update", async function() {
+            await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
             let err;
             try {
@@ -41,8 +44,10 @@ contract('EqualVSP', function(accounts) {
         beforeEach(async function() {
             this.contract = await EqualVPS.new(false, true, [owner]);
             await this.contract.addAddressToWhitelist(owner);
+            assert.equal(await this.contract.paused(), true);
         });
         it("init-values", async function() {
+            await this.contract.resume();
             assert.equal(await this.contract.totalPower(), 1);
             assert.equal(await this.contract.powerOf(owner), 1);
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
@@ -52,6 +57,7 @@ contract('EqualVSP', function(accounts) {
             assert.equal(powers[1], 0);
         });
         it("not-owner", async function() {
+            await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
             let err;
             try {
@@ -72,12 +78,15 @@ contract('EqualVSP', function(accounts) {
             assert.equal(await this.contract.powerOf(owner), 1);
         });
         it("update", async function() {
+            await this.contract.resume();
             assert.equal(await this.contract.totalPower(), 1);
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
             await this.contract.addQualifiedVoters([accounts[1]]);
+            await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 1);
             assert.equal(await this.contract.totalPower(), 2);
             await this.contract.deleteQualifiedVoters([accounts[1]]);
+            await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
             assert.equal(await this.contract.totalPower(), 1);
         });

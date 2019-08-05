@@ -50,15 +50,22 @@ contract('IssueRegistration', function(accounts) {
             this.invalidVPS = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
         });
         it('invalid-vps', async function() {
-            const issue = await IssueProposal.new(this.invalidVPS.address, 'title', 'description', false, false);
+            const issue = await IssueProposal.new(this.invalidVPS.address, 'title', 'description', 1, false);
             assert.equal(await this.contract.canRegister(issue.address), false);
         });
         it('invalid-issue-options', async function() {
-            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', false, false);
+            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
+            assert.equal(await this.contract.canRegister(issue.address), false);
+        });
+        it('invalid-issue-status', async function() {
+            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
+            await issue.addOption('no');
+            await issue.addOption('yes');
+            await issue.start();
             assert.equal(await this.contract.canRegister(issue.address), false);
         });
         it('yes', async function() {
-            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', false, false);
+            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
             await issue.addOption('no');
             await issue.addOption('yes');
             assert.equal(await this.contract.canRegister(issue.address), true);
@@ -67,7 +74,7 @@ contract('IssueRegistration', function(accounts) {
     describe('register', function() {
         beforeEach(async function() {
             await this.contract.addVPS(this.vps.address);
-            this.issue = await IssueProposal.new(this.vps.address, 'title', 'description', false, false);
+            this.issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
             await this.issue.addOption('no');
             await this.issue.addOption('yes');
         });

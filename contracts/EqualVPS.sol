@@ -13,6 +13,11 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
     uint256 public numOfQualifiedVoters;
     bool public openToPublic;
     bool public canUpdateQualifiedVoters;
+    bool public updating;
+    modifier whenNotPaused() {
+        require(!updating);
+        _;
+    }
 
     modifier qualifiedVotersUpdatable() {
         require(!openToPublic && canUpdateQualifiedVoters);
@@ -28,6 +33,7 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
     }
 
     function addQualifiedVotersInternal(address[] _voters) internal {
+        updating = true;
         for (uint i = 0; i < _voters.length; i++) {
             if (!qualifiedVoters[_voters[i]].flag) {
                 voterAddrs.push(_voters[i]);
@@ -48,6 +54,7 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
     }
 
     function deleteQualifiedVoters(address[] _voters) external onlyWhitelisted qualifiedVotersUpdatable {
+        updating = true;
         for (uint i = 0; i < _voters.length; i++) {
             if (qualifiedVoters[_voters[i]].flag) {
                 if (qualifiedVoters[_voters[i]].eligible) {
@@ -59,14 +66,14 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
         }
     }
 
-    function totalPower() public view returns (uint256) {
+    function totalPower() public whenNotPaused view returns (uint256) {
         if (openToPublic) {
             return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
         return numOfQualifiedVoters;
     }
 
-    function powersOf(address[] _voters) external view returns (uint256[] powers_) {
+    function powersOf(address[] _voters) external whenNotPaused view returns (uint256[] powers_) {
         if (_voters.length == 0) {
             return powers_;
         }
@@ -78,14 +85,14 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
         }
     }
 
-    function powerOf(address _voter) external view returns (uint256) {
+    function powerOf(address _voter) external whenNotPaused view returns (uint256) {
         if (openToPublic || qualifiedVoters[_voter].eligible) {
             return 1;
         }
         return 0;
     }
 
-    function voters(uint256 _offset, uint256 _limit) public view returns (address[] voters_) {
+    function voters(uint256 _offset, uint256 _limit) public whenNotPaused view returns (address[] voters_) {
         require(_limit <= 200);
         if (_limit == 0 || _offset >= voterAddrs.length || openToPublic) {
             return voters_;
@@ -98,5 +105,13 @@ contract EqualVPS is VotingPowerSystem, Whitelist {
         for (uint i = 0; i < l; i++) {
             voters_[i] = voterAddrs[_offset + i];
         }
+    }
+
+    function paused() public view returns (bool) {
+        return updating;
+    }
+
+    function resume() external onlyWhitelisted {
+        updating = false;
     }
 }

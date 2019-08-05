@@ -5,9 +5,11 @@ import "./library/Ownable.sol";
 import "./library/VotingPowerSystem.sol";
 import "./library/SafeMath.sol";
 import "./IssueProposal.sol";
+import "./library/IssueSheet.sol";
 
 contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     using SafeMath for uint;
+    event NewOption(uint index, string description);
     struct Ballot {
         bool[] values;
         bool flag;
@@ -19,8 +21,20 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     address public proposer;
     uint public status; // 0: new; 1: started; 2: paused; 3: ended
 
-    constructor(address _proposal, address _vpsAddress, string _title, string _desc, bool _multiChoice, bool _canRevote) public 
-    IssueProposal( _vpsAddress, _title, _desc, _multiChoice, _canRevote){
+    bool public canRevote;
+    uint public multiChoice;
+
+    constructor(address _proposal, address _vpsAddress, string _title, string _desc, uint _multiChoice, bool _canRevote) public 
+    IssueProposal( _vpsAddress, _title, _desc, _multiChoice, _canRevote) {
+        vps = VotingPowerSystem(_vpsAddress);
+        title = _title;
+        description = _desc;
+        canRevote = _canRevote;
+        if (_multiChoice == 0) {
+            multiChoice = 1;
+        } else {
+            multiChoice = _multiChoice;
+        }
         proposer = msg.sender;
         status = 0;   
 
@@ -31,21 +45,21 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
         }
     }
 
-    function pause() onlyOwner public {
+    function pause() public onlyOwner {
         require(isActive());
         status = 2;
     }
 
-    function unpause() onlyOwner public {
+    function unpause() public onlyOwner {
         require(isPaused());
         status = 1;
     }
 
-    function start() onlyOwner public {
+    function start() public onlyOwner {
         setStatus(true);
     }
 
-    function end() onlyOwner public {
+    function end() public onlyOwner {
         setStatus(false);
     }
 
@@ -55,7 +69,7 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function isActive() public view returns (bool) {
-        return status == 1;
+        return status == 1;// && IssueSheet(owner).approved(address(this));
     }
 
     function isPaused() public view returns (bool) {
@@ -66,32 +80,78 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
         return status == 3;
     }
 
-    function vote(uint _opt) external returns (bool) {
+    function voteInternal(uint[] _opts) internal returns (bool) {
         require(isActive());
-        require(_opt > 0 && _opt <= optionCount);
-        if (!ballots[msg.sender].flag) {
-            //in case of first-voting 
-            voterAddrs.push(msg.sender);
-            ballots[msg.sender] = Ballot(new bool[](optionCount), true);
-            ballots[msg.sender].values[_opt - 1] = true;
+        uint i;
+        if (canRevote) {
+            for (i = 0; i < optionCount; i++) {
+                ballots[msg.sender].values[i] = false;
+            }
         } else {
-            if (multiChoice) {
-                //multiple-choice 
-                ballots[msg.sender].values[_opt - 1] = true;
-            } else {
-                if (!canRevote) {
-                    //single-choice, cannot re-vote 
-                    return false;
-                }
-                //single-choice, can re-vote 
-                for (uint i = 0; i < optionCount; i++) {
-                    ballots[msg.sender].values[i] = i + 1 == _opt;
+            uint existingVotes = 0;
+            for (i = 0; i < optionCount; i++) {
+                if (ballots[msg.sender].values[i]) {
+                    existingVotes++;
                 }
             }
+            if (existingVotes > 0) {
+                return false;
+            }
         }
-        emit OnVote(msg.sender, _opt);
-
+        for (i = 0; i < _opts.length; i++) {
+            uint opt = _opts[i];
+            require(opt > 0 && opt <= optionCount);
+            ballots[msg.sender].values[opt - 1] = true;
+            emit OnVote(msg.sender, opt);
+        }
         return true;
+    }
+
+    function createBallotIfNotExist() internal {
+        if (!ballots[msg.sender].flag) {
+            voterAddrs.push(msg.sender);
+            ballots[msg.sender] = Ballot(new bool[](optionCount), true);
+        }
+    }
+
+    function vote(uint _opt) external returns (bool) {
+        createBallotIfNotExist();
+        uint[] memory opts = new uint[](1);
+        opts[0] = _opt;
+        return voteInternal(opts);
+    }
+
+    function voteMultiple(uint[] _opts) public returns (bool) {
+        createBallotIfNotExist();
+        return voteInternal(_opts);
+    }
+
+    function numOfVoters() public view returns (uint) {
+        return voterAddrs.length;
+    }
+
+    function voters(uint _offset, uint _limit) public view returns (address[] addrs_) {
+        if (_offset >= voterAddrs.length || _limit == 0) {
+            return addrs_;
+        }
+        uint limit = voterAddrs.length - _offset;
+        if (_limit < limit) {
+            limit = _limit;
+        }
+        addrs_ = new address[](limit);
+        for (uint i = 0; i < limit; i++) {
+            addrs_[i] = voterAddrs[_offset + i];
+        }
+    }
+
+    function voted(uint _opt, address[] _voters) external view returns (bool[] voted_) {
+        require(_opt > 0 && _opt <= optionCount && _voters.length > 0);
+        voted_ = new bool[](_voters.length);
+        for (uint i = 0; i < _voters.length; i++) {
+            if (ballots[_voters[i]].flag) {
+                voted_[i] = ballots[_voters[i]].values[_opt - 1];
+            }
+        }
     }
 
     function setStatus(bool _isOpen) public onlyOwner returns (bool success) {
@@ -111,7 +171,7 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function ballotOf(address addr) external view returns (uint) {
-        require(!multiChoice);
+        require(multiChoice <= 1);
         if (ballots[addr].flag) {
             for (uint i = 0; i < optionCount; i++) {
                 if (ballots[addr].values[i]) {
@@ -120,6 +180,25 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
             }
         }
         return 0;
+    }
+
+    function ballotsOf(address _addr) external view returns (uint[] ballots_) {
+        uint i = 0;
+        uint size = 0;
+        for (i = 0; i < optionCount; i++) {
+            if (ballots[_addr].values[i]) {
+                size++;
+            }
+        }
+        if (size != 0) {
+            uint idx = 0;
+            ballots_ = new uint[](size);
+            for (i = 0; i < optionCount; i++) {
+                if (ballots[_addr].values[i]) {
+                    ballots_[idx++] = i + 1;
+                }
+            }
+        }
     }
 
     function weightOf(address addr) external view returns (uint) {

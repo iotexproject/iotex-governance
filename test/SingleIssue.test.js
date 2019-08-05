@@ -14,6 +14,8 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, cannot-revote with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
+            await vps.addAddressToWhitelist(accounts[0]);
+            await vps.resume();
             const prop = await IssueProposal.new(vps.address, 'title', 'description', false, false);
             await addOptions(prop);
 
@@ -97,6 +99,8 @@ contract('SingleIssue', function (accounts) {
     describe('single-choice, can-revote with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
+            await vps.addAddressToWhitelist(accounts[0]);
+            await vps.resume();
             const prop = await IssueProposal.new(vps.address, 'title', 'description', false, true);
             await addOptions(prop);
             this.contract = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.isMultiChoice(), await prop.isCanRevote());
@@ -118,6 +122,8 @@ contract('SingleIssue', function (accounts) {
     describe('multiple-choice with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
+            await vps.addAddressToWhitelist(accounts[0]);
+            await vps.resume();
             const prop = await IssueProposal.new(vps.address, 'title', 'description', true, false);
             await addOptions(prop);
 
@@ -127,7 +133,7 @@ contract('SingleIssue', function (accounts) {
         it('vote-multiple', async function () {
             await this.contract.vote(1, { from: accounts[1] });
             assert.equal(await this.contract.weightedVoteCountsOf(1), 1);
-            await this.contract.vote(2, { from: accounts[1] });
+            await this.contract.voteMultiple([1, 2], { from: accounts[1] });
             assert.equal(await this.contract.weightedVoteCountsOf(1), 1);
             assert.equal(await this.contract.weightedVoteCountsOf(2), 1);
         });

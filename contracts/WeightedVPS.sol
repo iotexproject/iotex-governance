@@ -1,10 +1,11 @@
 pragma solidity ^0.4.24;
 
-import "./library/Whitelist.sol";
 import "./library/SafeMath.sol";
 import "./library/VotingPowerSystem.sol";
+import "./library/Whitelist.sol";
+import "./library/Pausable.sol";
 
-contract WeightedVPS is VotingPowerSystem, Whitelist {
+contract WeightedVPS is VotingPowerSystem, Whitelist, Pausable {
     using SafeMath for uint256;
     struct Power {
         uint256 value;
@@ -26,7 +27,7 @@ contract WeightedVPS is VotingPowerSystem, Whitelist {
         updateVotingPowersInternal(_voters, _powers);
     }
 
-    function totalPower() external view returns (uint256) {
+    function totalPower() external whenNotPaused view returns (uint256) {
         return powerInTotal;
     }
 
@@ -44,11 +45,15 @@ contract WeightedVPS is VotingPowerSystem, Whitelist {
             emit SetVotingPower(_voters[i], _powers[i]);
         }
     }
+
     function updateVotingPowers(address[] _voters, uint256[] _powers) external votingPowerUpdatable onlyWhitelisted {
+        if (!paused) {
+            pause();
+        }
         updateVotingPowersInternal(_voters, _powers);
     }
 
-    function powersOf(address[] _voters) external view returns (uint256[] powers_) {
+    function powersOf(address[] _voters) external whenNotPaused view returns (uint256[] powers_) {
         if (_voters.length == 0) {
             return powers_;
         }
@@ -58,11 +63,11 @@ contract WeightedVPS is VotingPowerSystem, Whitelist {
         }
     }
 
-    function powerOf(address _voter) external view returns (uint256) {
+    function powerOf(address _voter) external whenNotPaused view returns (uint256) {
         return votingPowers[_voter].value;
     }
 
-    function voters(uint256 _offset, uint256 _limit) public view returns (address[] voters_) {
+    function voters(uint256 _offset, uint256 _limit) public whenNotPaused view returns (address[] voters_) {
         require(_limit <= 200);
         if (_limit == 0 || _offset >= voterAddrs.length) {
             return voters_;
@@ -75,5 +80,15 @@ contract WeightedVPS is VotingPowerSystem, Whitelist {
         for (uint i = 0; i < l; i++) {
             voters_[i] = voterAddrs[_offset + i];
         }
+    }
+
+    function pause() public onlyWhitelisted whenNotPaused {
+        paused = true;
+        emit Pause();
+    }
+
+    function unpause() public onlyWhitelisted whenPaused {
+        paused = false;
+        emit Unpause();
     }
 }
