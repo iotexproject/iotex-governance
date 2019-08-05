@@ -3,6 +3,7 @@ const SingleIssue = artifacts.require('SingleIssue.sol');
 const AdhocIssueSheet = artifacts.require('AdhocIssueSheet.sol');
 const IssueRegistration = artifacts.require('IssueRegistration.sol');
 const IssueProposal = artifacts.require('IssueProposal.sol');
+const {assertAsyncThrows} = require("./assert-async-throws");
 
 contract('IssueRegistration', function(accounts) {
     beforeEach(async function() {
@@ -27,14 +28,7 @@ contract('IssueRegistration', function(accounts) {
     });
     describe('vps', function() {
         it('no-permission', async function() {
-            let err;
-            try {
-                await this.contract.addVPS(this.vps.address, {from: accounts[2]});
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.addVPS(this.vps.address, {from: accounts[2]}));
         });
         it('add-and-delete-vps', async function() {
             assert.equal(await this.contract.isValidVPS(this.vps.address), false);
@@ -57,13 +51,6 @@ contract('IssueRegistration', function(accounts) {
             const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
             assert.equal(await this.contract.canRegister(issue.address), false);
         });
-        it('invalid-issue-status', async function() {
-            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
-            await issue.addOption('no');
-            await issue.addOption('yes');
-            await issue.start();
-            assert.equal(await this.contract.canRegister(issue.address), false);
-        });
         it('yes', async function() {
             const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
             await issue.addOption('no');
@@ -79,23 +66,10 @@ contract('IssueRegistration', function(accounts) {
             await this.issue.addOption('yes');
         });
         it('not-enough-fee', async function() {
-            let err;
-            try {
-                await this.contract.register(this.issue.address, {value: 10});
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.register(this.issue.address, {value: 10}));
         });
         it('success', async function() {
-            let err;
-            try {
-                await this.contract.register(this.issue.address, {value: 20});
-            } catch (e) {
-                err = e;
-            }
-            assert.equal(err, undefined);
+            await this.contract.register(this.issue.address, {value: 20});
             assert.equal(await this.issueSheet.issueCount(), 1);
         });
     });

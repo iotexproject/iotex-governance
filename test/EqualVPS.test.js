@@ -1,4 +1,5 @@
 const EqualVPS = artifacts.require('EqualVPS.sol');
+const {assertAsyncThrows} = require("./assert-async-throws");
 
 contract('EqualVSP', function(accounts) {
     const owner = accounts[0];
@@ -21,22 +22,9 @@ contract('EqualVSP', function(accounts) {
         it("not-update", async function() {
             await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
-            let err;
-            try {
-                await this.contract.addQualifiedVoters([accounts[1]]);
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.addQualifiedVoters([accounts[1]]));
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
-            try {
-                await this.contract.deleteQualifiedVoters([owner]);
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.deleteQualifiedVoters([owner]));
             assert.equal(await this.contract.powerOf(owner), 1);
         });
     });
@@ -59,22 +47,9 @@ contract('EqualVSP', function(accounts) {
         it("not-owner", async function() {
             await this.contract.resume();
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
-            let err;
-            try {
-                await this.contract.addQualifiedVoters([accounts[1]], {from: accounts[1]});
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.addQualifiedVoters([accounts[1]], {from: accounts[1]}));
             assert.equal(await this.contract.powerOf(accounts[1]), 0);
-            try {
-                await this.contract.deleteQualifiedVoters([owner], {from: accounts[1]});
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.deleteQualifiedVoters([owner], {from: accounts[1]}));
             assert.equal(await this.contract.powerOf(owner), 1);
         });
         it("update", async function() {

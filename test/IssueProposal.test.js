@@ -13,7 +13,7 @@ contract('IssueProposal', function(accounts) {
     describe('single-choice, cannot-revote with EqualVPS', function () {
         beforeEach(async function () {
             const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
-            this.contract = await IssueProposal.new(vps.address, 'title', 'description', false, false);
+            this.contract = await IssueProposal.new(vps.address, 'title', 'description', 1, false);
             await addOptions(this.contract);
         });
         describe('New', function () {

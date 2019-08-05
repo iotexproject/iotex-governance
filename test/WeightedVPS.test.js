@@ -1,4 +1,5 @@
 const WeightedVPS = artifacts.require('WeightedVPS.sol');
+const {assertAsyncThrows} = require("./assert-async-throws");
 
 contract('WeightedVPS', function(accounts) {
     const owner = accounts[0];
@@ -21,13 +22,7 @@ contract('WeightedVPS', function(accounts) {
         it("not-updatable", async function() {
             assert.equal(await this.contract.powerOf(accounts[1]), 1);
             assert.equal(await this.contract.powerOf(accounts[3]), 0);
-            let err;
-            try {
-                await this.contract.updateVotingPowers([accounts[1], accounts[3]], [0, 128]);
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
+            await assertAsyncThrows(this.contract.updateVotingPowers([accounts[1], accounts[3]], [0, 128]));
             assert.equal(await this.contract.powerOf(accounts[1]), 1);
             assert.equal(await this.contract.powerOf(accounts[3]), 0);
         });
@@ -51,14 +46,7 @@ contract('WeightedVPS', function(accounts) {
         it("not-owner", async function() {
             assert.equal(await this.contract.powerOf(accounts[1]), 1);
             assert.equal(await this.contract.powerOf(accounts[3]), 0);
-            let err;
-            try {
-                await this.contract.updateVotingPowers([accounts[1], accounts[3]], [0, 128], {from: accounts[3]});
-                assert.fail();
-            } catch (e) {
-                err = e;
-            }
-            assert.notEqual(err, undefined);
+            await assertAsyncThrows(this.contract.updateVotingPowers([accounts[1], accounts[3]], [0, 128], {from: accounts[3]}));
             assert.equal(await this.contract.powerOf(accounts[1]), 1);
             assert.equal(await this.contract.powerOf(accounts[3]), 0);
         });

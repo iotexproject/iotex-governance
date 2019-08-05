@@ -24,8 +24,8 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     bool public canRevote;
     uint public multiChoice;
 
-    constructor(address _proposal, address _vpsAddress, string _title, string _desc, uint _multiChoice, bool _canRevote) public 
-    IssueProposal( _vpsAddress, _title, _desc, _multiChoice, _canRevote) {
+    constructor(address _proposal, address _vpsAddress, string _title, string _desc, uint8 _multiChoice, bool _canRevote) public
+    IssueProposal(_vpsAddress, _title, _desc, _multiChoice, _canRevote) {
         vps = VotingPowerSystem(_vpsAddress);
         title = _title;
         description = _desc;
@@ -36,12 +36,12 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
             multiChoice = _multiChoice;
         }
         proposer = msg.sender;
-        status = 0;   
+        status = 0;
 
-        IssueProposal proposal = IssueProposal(_proposal);           
-        optionCount= proposal.optionCount();
+        IssueProposal proposal = IssueProposal(_proposal);
+        optionCount = proposal.optionCount();
         for(uint i = 1; i <= optionCount; i++){
-            options[i] = proposal.optionDescription(i); 
+            options[i] = proposal.optionDescription(i);
         }
     }
 
@@ -62,7 +62,6 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     function end() public onlyOwner {
         setStatus(false);
     }
-
 
     function isNew() public view returns (bool) {
         return status == 0;

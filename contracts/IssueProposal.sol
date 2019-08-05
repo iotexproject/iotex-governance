@@ -10,12 +10,12 @@ contract IssueProposal is Ownable {
     string public description;
 
     bool public canRevote;
-    bool public multiChoice;
+    uint8 public multiChoice;
 
     mapping(uint => string) public options;
     uint public optionCount;
 
-    constructor(address _vpsAddress, string _title, string _desc, bool _multiChoice, bool _canRevote) public {
+    constructor(address _vpsAddress, string _title, string _desc, uint8 _multiChoice, bool _canRevote) public {
         require(bytes(_title).length > 0 && bytes(_title).length < 20);
         require(bytes(_desc).length > 0);
         vps = VotingPowerSystem(_vpsAddress);
@@ -43,7 +43,7 @@ contract IssueProposal is Ownable {
         return canRevote;
     }
 
-    function isMultiChoice() public view returns (bool){
+    function numOfChoices() public view returns (uint8) {
         return multiChoice;
     }
 

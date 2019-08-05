@@ -55,7 +55,7 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
             prop.vpsAddress(),
             prop.issueTitle(),
             prop.issueDescription(),
-            prop.isMultiChoice(),
+            prop.numOfChoices(),
             prop.isCanRevote());
         if (sheet.addIssue(address(issue))) {
             issue.transferOwnership(address(sheet));
