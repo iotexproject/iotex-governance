@@ -6,6 +6,7 @@ import "./library/Pausable.sol";
 import "./library/Whitelist.sol";
 import "./IssueProposal.sol";
 import "./SingleIssue.sol";
+import "./OffchainIssue.sol";
 
 contract IssueRegistration is Ownable, Whitelist, Pausable  {
     event Withdraw(address _owner, uint256 _balance);
@@ -47,9 +48,11 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
         }
     }
 
-    function register(address _issueProposalAddr) public whenNotPaused payable returns (bool success) {
-        require(msg.value >= registrationFee && canRegister(_issueProposalAddr));
+
+    function register(address _issueProposalAddr) public whenNotPaused payable returns (bool) {
+        require(msg.value >= registrationFee);
         IssueProposal prop = IssueProposal(_issueProposalAddr);
+        require(canRegister(prop.vpsAddress(), prop.optionCount()));
         SingleIssue issue = new SingleIssue(
             _issueProposalAddr,
             prop.vpsAddress(),
@@ -65,9 +68,25 @@ contract IssueRegistration is Ownable, Whitelist, Pausable  {
         return false;
     }
 
-    function canRegister(address _issueProposalAddr) public view returns (bool) {
-        IssueProposal proposal = IssueProposal(_issueProposalAddr);
-        return isValidVPS(proposal.vpsAddress()) && proposal.optionCount() > 0;
+    function registerOffchainIssue(string _metaURI, bytes32 _metaHash, address _vpsAddress, uint _optionCount, bool _canRevote, uint8 _canMultiChoice) public whenNotPaused payable returns (bool) {
+        require(msg.value >= registrationFee && canRegister(_vpsAddress, _optionCount));
+        OffchainIssue issue = new OffchainIssue (
+            _metaURI,
+            _metaHash,
+            _vpsAddress,
+            _optionCount,
+            _canRevote,
+            _canMultiChoice);
+        if (sheet.addIssue(address(issue))) {
+            issue.transferOwnership(address(sheet));
+            emit Register(address(issue), msg.value);
+            return true;
+        }
+        return false;
+    }
+
+    function canRegister(address _vpsAddress, uint _optionCount) public view returns (bool) {
+        return isValidVPS(_vpsAddress) && _optionCount > 0;
     }
 
     function withdraw() public onlyOwner payable {
