@@ -9,11 +9,11 @@ contract('AdhocIssueSheet', function(accounts) {
         this.contract = await AdhocIssueSheet.new();
         const vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
         await this.contract.addAddressToWhitelist(accounts[0]);
-        const prop = await IssueProposal.new(vps.address, 'title', 'description', 1, false);
+        const prop = await IssueProposal.new('title', 'description', 8640, 1, false, false);
         await prop.addOption("no");
         await prop.addOption("yes");
 
-        this.issue = await SingleIssue.new(prop.address, await prop.vpsAddress(), await prop.issueTitle(), await prop.issueDescription(), await prop.numOfChoices(), await prop.isCanRevote());
+        this.issue = await SingleIssue.new(prop.address, vps.address);
     });
     describe('addIssue', function() {
         it('no-permission', async function() {

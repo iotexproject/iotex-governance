@@ -8,10 +8,11 @@ const {assertAsyncThrows} = require("./assert-async-throws");
 contract('IssueRegistration', function(accounts) {
     beforeEach(async function() {
         this.issueSheet = await AdhocIssueSheet.new();
-        this.contract = await IssueRegistration.new(20, this.issueSheet.address);
+        this.vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
+        this.weightedVPS = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
+        this.contract = await IssueRegistration.new(20, this.issueSheet.address, this.vps.address, this.weightedVPS.address);
         await this.contract.addAddressToWhitelist(accounts[0]);
         await this.issueSheet.addAddressToWhitelist(this.contract.address);
-        this.vps = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
     });
     describe('settings', function() {
         it('issue-sheet', async function() {
@@ -19,6 +20,8 @@ contract('IssueRegistration', function(accounts) {
             const newIssueSheet = await AdhocIssueSheet.new();
             await this.contract.setIssueSheet(newIssueSheet.address);
             assert.equal(await this.contract.issueSheet(), newIssueSheet.address);
+            assert.equal(await this.contract.equalVPSAddress(), this.weightedVPS.address);
+            assert.equal(await this.contract.weightedVPSAddress(), this.vps.address);
         });
         it('registration-fee', async function() {
             assert.equal(await this.contract.registrationFee(), 20);
@@ -28,31 +31,21 @@ contract('IssueRegistration', function(accounts) {
     });
     describe('vps', function() {
         it('no-permission', async function() {
-            await assertAsyncThrows(this.contract.addVPS(this.vps.address, {from: accounts[2]}));
+            await assertAsyncThrows(this.contract.setEqualVPSAddress(this.vps.address, {from: accounts[2]}));
+            await assertAsyncThrows(this.contract.setWeightedVPSAddress(this.vps.address, {from: accounts[2]}));
         });
-        it('add-and-delete-vps', async function() {
-            assert.equal(await this.contract.isValidVPS(this.vps.address), false);
-            await this.contract.addVPS(this.vps.address);
-            assert.equal(await this.contract.isValidVPS(this.vps.address), true);
-            await this.contract.deleteVPS(this.vps.address);
-            assert.equal(await this.contract.isValidVPS(this.vps.address), false);
-        })
     });
     describe('can-register', function() {
-        beforeEach(async function() {
-            await this.contract.addVPS(this.vps.address);
-            this.invalidVPS = await EqualVPS.new(false, true, [accounts[0], accounts[1], accounts[2]]);
-        });
-        it('invalid-vps', async function() {
-            const issue = await IssueProposal.new(this.invalidVPS.address, 'title', 'description', 1, false);
+        it('no description', async function() {
+            const issue = await IssueProposal.new('title', '', 8640, 1, false, false);
             assert.equal(await this.contract.canRegister(issue.address), false);
         });
         it('invalid-issue-options', async function() {
-            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
+            const issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
             assert.equal(await this.contract.canRegister(issue.address), false);
         });
         it('yes', async function() {
-            const issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
+            const issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
             await issue.addOption('no');
             await issue.addOption('yes');
             assert.equal(await this.contract.canRegister(issue.address), true);
@@ -60,8 +53,7 @@ contract('IssueRegistration', function(accounts) {
     });
     describe('register', function() {
         beforeEach(async function() {
-            await this.contract.addVPS(this.vps.address);
-            this.issue = await IssueProposal.new(this.vps.address, 'title', 'description', 1, false);
+            this.issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
             await this.issue.addOption('no');
             await this.issue.addOption('yes');
         });

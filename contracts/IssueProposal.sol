@@ -1,78 +1,60 @@
 pragma solidity ^0.4.22;
 
-import "./library/VotingPowerSystem.sol";
 import "./library/Ownable.sol";
+import "./IssueBase.sol";
 
-contract IssueProposal is Ownable {
-    event NewOption(uint256 index, string description);
-    VotingPowerSystem public vps;
-    string public title;
-    string public description;
+contract IssueProposal is Ownable, IssueBase {
+    bool public weighted;
+    string[] private options;
 
-    bool public canRevote;
-    uint8 public multiChoice;
+    constructor(string _title, string _desc, uint256 _duration, uint8 _maxNumOfChoices, bool _weighted, bool _canRevote) public {
+        setTitle(_title);
+        setDescription(_desc);
+        setCanRevote(_canRevote);
+        setMaxNumOfChoices(_maxNumOfChoices);
+        setDuration(_duration);
+        weighted = _weighted;
+    }
 
-    mapping(uint => string) public options;
-    uint public optionCount;
-
-    constructor(address _vpsAddress, string _title, string _desc, uint8 _multiChoice, bool _canRevote) public {
-        require(bytes(_title).length > 0 && bytes(_title).length < 20);
-        require(bytes(_desc).length > 0);
-        vps = VotingPowerSystem(_vpsAddress);
+    function setTitle(string _title) public onlyOwner {
         title = _title;
-        description = _desc;
+    }
+
+    function setDescription(string _description) public onlyOwner {
+        description = _description;
+    }
+
+    function setDuration(uint256 _duration) public onlyOwner {
+        duration = _duration;
+    }
+
+    function setCanRevote(bool _canRevote) public onlyOwner {
         canRevote = _canRevote;
-        multiChoice = _multiChoice;
-        optionCount = 0;
+    }
+
+    function setMaxNumOfChoices(uint8 _maxNumOfChoices) public onlyOwner {
+        maxNumOfChoices = _maxNumOfChoices;
+    }
+
+    function setWeighted(bool _weighted) public onlyOwner {
+        weighted = _weighted;
     }
 
     function addOption(string _option) external onlyOwner returns (uint) {
-        require(bytes(_option).length > 0);
-        for (uint i = 1; i <= optionCount; i++) {
-             if (keccak256(abi.encodePacked(_option)) == keccak256(abi.encodePacked(options[i]))) {
-                return i;
-            }
-        }
-        optionCount++;
-        options[optionCount] = _option;
-        emit NewOption(optionCount, _option);
-       	return optionCount;
+        options.push(_option);
     }
 
-    function isCanRevote() public view returns (bool) {
-        return canRevote;
+    function updateOption(uint _index, string _option) public onlyOwner {
+        require(_index < options.length, "out of range");
+        options[_index] = _option;
     }
 
-    function numOfChoices() public view returns (uint8) {
-        return multiChoice;
+    function optionCount() public view returns (uint) {
+        return options.length;
     }
 
-    function vpsAddress() public view returns (address) {
-        return address(vps);
-    }
-
-    function issueTitle() external view returns (string) {
-        return title;
-    }
-
-    function issueDescription() external view returns (string) {
-        return description;
-    }
-
-    function optionCount() external view returns (uint) {
-    	return optionCount;
-    }
-
-    function availableOptions() external view returns (uint[] options_) {
-        options_ = new uint[](optionCount);
-        for (uint i = 0; i < optionCount; i++) {
-            options_[i] = i + 1;
-        }
-        return options_;
-    }
-
-    function optionDescription(uint _opt) external view returns (string) {
-        require(_opt > 0 && _opt <= optionCount);
-        return options[_opt];
+    function getOptionDescription(uint _index) public view returns (string) {
+        require(_index < options.length, "out of range");
+        return options[_index];
     }
 }

@@ -7,42 +7,58 @@ import "./library/SafeMath.sol";
 import "./IssueProposal.sol";
 import "./library/IssueSheet.sol";
 
-contract SingleIssue is  ERC1202, Ownable, IssueProposal {
+contract SingleIssue is ERC1202, IssueBase, Ownable {
     using SafeMath for uint;
-    event NewOption(uint index, string description);
+    event NewOption(uint256 index, string description);
     struct Ballot {
-        bool[] values;
+        uint[] counts;
         bool flag;
     }
 
     mapping(address => Ballot) public ballots;
     address[] voterAddrs;
+    VotingPowerSystem public vps;
+    string[] private optionDescriptions;
+    uint256 public endHeight;
 
     address public proposer;
     uint public status; // 0: new; 1: started; 2: paused; 3: ended
 
-    bool public canRevote;
-    uint public multiChoice;
-
-    constructor(address _proposal, address _vpsAddress, string _title, string _desc, uint8 _multiChoice, bool _canRevote) public
-    IssueProposal(_vpsAddress, _title, _desc, _multiChoice, _canRevote) {
+    constructor(address _proposal, address _vpsAddress) public {
+        IssueProposal proposal = IssueProposal(_proposal);
         vps = VotingPowerSystem(_vpsAddress);
-        title = _title;
-        description = _desc;
-        canRevote = _canRevote;
-        if (_multiChoice == 0) {
-            multiChoice = 1;
-        } else {
-            multiChoice = _multiChoice;
+        title = proposal.title();
+        description = proposal.description();
+        canRevote = proposal.canRevote();
+        maxNumOfChoices = proposal.maxNumOfChoices();
+        if (maxNumOfChoices == 0) {
+            maxNumOfChoices = 1;
         }
         proposer = msg.sender;
         status = 0;
 
-        IssueProposal proposal = IssueProposal(_proposal);
-        optionCount = proposal.optionCount();
-        for(uint i = 1; i <= optionCount; i++){
-            options[i] = proposal.optionDescription(i);
+        for(uint i = 0; i < proposal.optionCount(); i++) {
+            optionDescriptions.push(proposal.getOptionDescription(i));
         }
+    }
+
+    function availableOptions() external view returns (uint[] options_) {
+        uint l = optionCount();
+        if (l == 0) {
+            return options_;
+        }
+        options_ = new uint[](l);
+        for (uint i = 0; i < l; i++) {
+            options_[i] = i;
+        }
+    }
+
+    function optionDescription(uint _opt) external view returns (string) {
+        return optionDescriptions[_opt];
+    }
+
+    function optionCount() public view returns (uint) {
+        return optionDescriptions.length;
     }
 
     function pause() public onlyOwner {
@@ -68,7 +84,7 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function isActive() public view returns (bool) {
-        return status == 1;// && IssueSheet(owner).approved(address(this));
+        return status == 1 && (endHeight == 0 || block.number <= endHeight);
     }
 
     function isPaused() public view returns (bool) {
@@ -80,48 +96,45 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function voteInternal(uint[] _opts) internal returns (bool) {
-        require(isActive());
+        require(isActive() && _opts.length > 0, "invalid status");
+        if (!ballots[msg.sender].flag) {
+            voterAddrs.push(msg.sender);
+            ballots[msg.sender] = Ballot(new uint[](optionCount()), true);
+        }
+        uint l = optionCount();
         uint i;
         if (canRevote) {
-            for (i = 0; i < optionCount; i++) {
-                ballots[msg.sender].values[i] = false;
+            for (i = 0; i < l; i++) {
+                ballots[msg.sender].counts[i] = 0;
             }
         } else {
-            uint existingVotes = 0;
-            for (i = 0; i < optionCount; i++) {
-                if (ballots[msg.sender].values[i]) {
-                    existingVotes++;
+            for (i = 0; i < l; i++) {
+                if (ballots[msg.sender].counts[i] > 0) {
+                    return false;
                 }
             }
-            if (existingVotes > 0) {
-                return false;
-            }
         }
+        uint unique = 0;
         for (i = 0; i < _opts.length; i++) {
             uint opt = _opts[i];
-            require(opt > 0 && opt <= optionCount);
-            ballots[msg.sender].values[opt - 1] = true;
+            require(opt < l, "out of range");
+            if (ballots[msg.sender].counts[opt] == 0) {
+                unique++;
+            }
+            ballots[msg.sender].counts[opt]++;
             emit OnVote(msg.sender, opt);
         }
+        require(unique <= maxNumOfChoices, "two many choices");
         return true;
     }
 
-    function createBallotIfNotExist() internal {
-        if (!ballots[msg.sender].flag) {
-            voterAddrs.push(msg.sender);
-            ballots[msg.sender] = Ballot(new bool[](optionCount), true);
-        }
-    }
-
     function vote(uint _opt) external returns (bool) {
-        createBallotIfNotExist();
         uint[] memory opts = new uint[](1);
         opts[0] = _opt;
         return voteInternal(opts);
     }
 
     function voteMultiple(uint[] _opts) public returns (bool) {
-        createBallotIfNotExist();
         return voteInternal(_opts);
     }
 
@@ -130,10 +143,8 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function voters(uint _offset, uint _limit) public view returns (address[] addrs_) {
-        if (_offset >= voterAddrs.length || _limit == 0) {
-            return addrs_;
-        }
-        uint limit = voterAddrs.length - _offset;
+        require(_offset < numOfVoters() && _limit > 0, "invalid parameters");
+        uint limit = numOfVoters() - _offset;
         if (_limit < limit) {
             limit = _limit;
         }
@@ -143,20 +154,23 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
         }
     }
 
-    function voted(uint _opt, address[] _voters) external view returns (bool[] voted_) {
-        require(_opt > 0 && _opt <= optionCount && _voters.length > 0);
-        voted_ = new bool[](_voters.length);
+    function voted(uint _opt, address[] _voters) external view returns (uint[] voted_) {
+        require(_opt < optionCount() && _voters.length > 0, "invalid parameters");
+        voted_ = new uint[](_voters.length);
         for (uint i = 0; i < _voters.length; i++) {
             if (ballots[_voters[i]].flag) {
-                voted_[i] = ballots[_voters[i]].values[_opt - 1];
+                voted_[i] = ballots[_voters[i]].counts[_opt];
             }
         }
     }
 
     function setStatus(bool _isOpen) public onlyOwner returns (bool success) {
         if (_isOpen) {
-            if (!isNew() || optionCount == 0) {
+            if (!isNew() || optionCount() == 0) {
                 return false;
+            }
+            if (duration > 0) {
+                endHeight = block.number + duration;
             }
             status = 1;
         } else {
@@ -170,31 +184,35 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function ballotOf(address addr) external view returns (uint) {
-        require(multiChoice <= 1);
-        if (ballots[addr].flag) {
-            for (uint i = 0; i < optionCount; i++) {
-                if (ballots[addr].values[i]) {
-                    return i + 1;
-                }
+        require(maxNumOfChoices == 1, "not a single choice issue");
+        if (!ballots[addr].flag) {
+            return optionCount();
+        }
+        for (uint i = 0; i < optionCount(); i++) {
+            if (ballots[addr].counts[i] > 0) {
+                return i;
             }
         }
-        return 0;
+        revert("invalid ballot");
     }
 
     function ballotsOf(address _addr) external view returns (uint[] ballots_) {
+        if (!ballots[_addr].flag) {
+            return ballots_;
+        }
         uint i = 0;
         uint size = 0;
-        for (i = 0; i < optionCount; i++) {
-            if (ballots[_addr].values[i]) {
+        for (i = 0; i < optionCount(); i++) {
+            if (ballots[_addr].counts[i] > 0) {
                 size++;
             }
         }
         if (size != 0) {
             uint idx = 0;
             ballots_ = new uint[](size);
-            for (i = 0; i < optionCount; i++) {
-                if (ballots[_addr].values[i]) {
-                    ballots_[idx++] = i + 1;
+            for (i = 0; i < optionCount(); i++) {
+                if (ballots[_addr].counts[i] > 0) {
+                    ballots_[idx++] = i;
                 }
             }
         }
@@ -209,36 +227,34 @@ contract SingleIssue is  ERC1202, Ownable, IssueProposal {
     }
 
     function weightedVoteCountsOf(uint _opt) external view returns (uint count_) {
-        require(_opt > 0 && _opt <= optionCount);
+        require(_opt < optionCount(), "out of range");
         for (uint i = 0; i < voterAddrs.length; i++) {
             uint power = vps.powerOf(voterAddrs[i]);
-            if (power != 0 && ballots[voterAddrs[i]].values[_opt - 1]) {
-                count_ = SafeMath.add(count_, power);
+            if (power != 0 && ballots[voterAddrs[i]].flag) {
+                count_ = SafeMath.add(count_, SafeMath.mul(power, ballots[voterAddrs[i]].counts[_opt]));
             }
         }
         return count_;
     }
 
     function winningOption() external view returns (uint winningOption_) {
-        uint[] memory counts = new uint[](optionCount);
+        uint l = optionCount();
+        uint[] memory counts = new uint[](l);
         uint i;
         for (i = 0; i < voterAddrs.length; i++) {
             uint power = vps.powerOf(voterAddrs[i]);
-            if (power != 0) {
-                Ballot storage b = ballots[voterAddrs[i]];
-                for (uint j = 0; j < optionCount; j++) {
-                    if (b.values[j]) {
-                        counts[j] = SafeMath.add(counts[j], power);
-                    }
+            Ballot storage b = ballots[voterAddrs[i]];
+            if (power != 0 && b.flag) {
+                for (uint j = 0; j < l; j++) {
+                    counts[j] = SafeMath.add(counts[j], SafeMath.mul(power, b.counts[j]));
                 }
             }
         }
-        for (i = 0; i < optionCount; i++) {
-            if (winningOption_ == 0 || counts[winningOption_ - 1] < counts[i]) {
-                winningOption_ = i + 1;
+        winningOption_ = l;
+        for (i = 0; i < l; i++) {
+            if (winningOption_ == l || counts[winningOption_] < counts[i]) {
+                winningOption_ = i;
             }
         }
-
-        return winningOption_;
     }
 }

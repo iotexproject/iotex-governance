@@ -16,7 +16,7 @@ interface ERC1202 {
     function vote(uint option) external returns (bool success);
     function setStatus(bool isOpen) external returns (bool success);
 
-    function issueDescription() external view returns (string desc);
+    function description() external view returns (string desc);
     function availableOptions() external view returns (uint[] options);
     function optionDescription(uint option) external view returns (string desc);
     function ballotOf(address addr) external view returns (uint option);
