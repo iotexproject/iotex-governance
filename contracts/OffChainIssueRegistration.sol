@@ -8,7 +8,7 @@ import "./IssueProposal.sol";
 import "./SingleIssue.sol";
 import "./OffchainIssue.sol";
 
-contract IssueRegistration is Ownable, Whitelist, Pausable  {
+contract OffChainIssueRegistration is Ownable, Whitelist, Pausable  {
     event Withdraw(address _owner, uint256 _balance);
     event Register(address _issue, uint256 _fee);
 

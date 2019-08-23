@@ -6,7 +6,7 @@ import "./library/VotingPowerSystem.sol";
 import "./library/SafeMath.sol";
 import "./library/IssueSheet.sol";
 
-contract OffchainIssue is  ERC1202, Ownable {
+contract OffchainIssue is ERC1202, Ownable {
     using SafeMath for uint;
 
     struct Ballot {
@@ -22,12 +22,17 @@ contract OffchainIssue is  ERC1202, Ownable {
     mapping(address => Ballot) public ballots;
     address[] voterAddrs;
 
-    uint public status; // 0: new; 1: started; 2: paused; 3: ended
+    enum Status {
+        New,
+        Active,
+        Paused,
+        Ended
+    }
+    Status public status;
 
     bool public canRevote;
     uint public multiChoice;
     uint public optionCount;
-
 
     constructor(string _uri, bytes32 _hash, address _vpsAddress, uint _optionCount, bool _canRevote, uint8 _multiChoice) public {
         metaURI = _uri;
@@ -40,17 +45,17 @@ contract OffchainIssue is  ERC1202, Ownable {
         } else {
             multiChoice = _multiChoice;
         }
-        status = 0;
+        status = Status.New;
     }
 
     function pause() public onlyOwner {
         require(isActive());
-        status = 2;
+        status = Status.Paused;
     }
 
     function unpause() public onlyOwner {
         require(isPaused());
-        status = 1;
+        status = Status.Active;
     }
 
     function start() public onlyOwner {
@@ -62,19 +67,19 @@ contract OffchainIssue is  ERC1202, Ownable {
     }
 
     function isNew() public view returns (bool) {
-        return status == 0;
+        return status == Status.New;
     }
 
     function isActive() public view returns (bool) {
-        return status == 1;// && IssueSheet(owner).approved(address(this));
+        return status == Status.Active;
     }
 
     function isPaused() public view returns (bool) {
-        return status == 2;
+        return status == Status.Paused;
     }
 
     function isEnded() public view returns (bool) {
-        return status == 3;
+        return status == Status.Ended;
     }
 
     function voteInternal(uint[] _opts) internal returns (bool) {
@@ -156,12 +161,12 @@ contract OffchainIssue is  ERC1202, Ownable {
             if (!isNew() || optionCount == 0) {
                 return false;
             }
-            status = 1;
+            status = Status.Active;
         } else {
             if (!isActive() && !isPaused()) {
                 return false;
             }
-            status = 3;
+            status = Status.Ended;
         }
         emit OnStatusChange(_isOpen);
         return true;
@@ -240,16 +245,14 @@ contract OffchainIssue is  ERC1202, Ownable {
         return winningOption_;
     }
 
-    function issueDescription() external view returns (string) {
+    function description() external view returns (string) {
         return "Not Applicable";
     }
-
 
     function optionDescription(uint _opt) external view returns (string) {
         require(_opt > 0 && _opt <= optionCount);
         return "Not Applicable";
     }
-    
 
     function availableOptions() external view returns (uint[] options_) {
         options_ = new uint[](optionCount);

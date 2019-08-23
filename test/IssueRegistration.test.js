@@ -1,7 +1,7 @@
 const EqualVPS = artifacts.require('EqualVPS.sol');
 const SingleIssue = artifacts.require('SingleIssue.sol');
 const AdhocIssueSheet = artifacts.require('AdhocIssueSheet.sol');
-const IssueRegistration = artifacts.require('IssueRegistration.sol');
+const IssueRegistration = artifacts.require('OffChainIssueRegistration.sol');
 const IssueProposal = artifacts.require('IssueProposal.sol');
 const {assertAsyncThrows} = require("./assert-async-throws");
 
@@ -35,33 +35,12 @@ contract('IssueRegistration', function(accounts) {
             await assertAsyncThrows(this.contract.setWeightedVPSAddress(this.vps.address, {from: accounts[2]}));
         });
     });
-    describe('can-register', function() {
-        it('no description', async function() {
-            const issue = await IssueProposal.new('title', '', 8640, 1, false, false);
-            assert.equal(await this.contract.canRegister(issue.address), false);
-        });
-        it('invalid-issue-options', async function() {
-            const issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
-            assert.equal(await this.contract.canRegister(issue.address), false);
-        });
-        it('yes', async function() {
-            const issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
-            await issue.addOption('no');
-            await issue.addOption('yes');
-            assert.equal(await this.contract.canRegister(issue.address), true);
-        });
-    });
     describe('register', function() {
-        beforeEach(async function() {
-            this.issue = await IssueProposal.new('title', 'description', 8640, 1, false, false);
-            await this.issue.addOption('no');
-            await this.issue.addOption('yes');
-        });
         it('not-enough-fee', async function() {
-            await assertAsyncThrows(this.contract.register(this.issue.address, {value: 10}));
+            await assertAsyncThrows(this.contract.register("https://localhost:4444/proposal.json", "0x0000000000000000000000000000000000000000000000000000000000000000", true, 3, false, 2, {value: 10}));
         });
         it('success', async function() {
-            await this.contract.register(this.issue.address, {value: 20});
+            await this.contract.register("https://localhost:4444/proposal.json", "0x0000000000000000000000000000000000000000000000000000000000000000", true, 3, false, 2, {value: 20});
             assert.equal(await this.issueSheet.issueCount(), 1);
         });
     });
