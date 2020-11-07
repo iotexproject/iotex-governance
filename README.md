@@ -1,6 +1,8 @@
 # Governance Framework of IoTeX Blockchain Protocol
 
-IoTeX blockchain protocol is managed by a decentralized community of delegates and voters who hold IOTX coins, who propose and vote on upgrades to the protocol. This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance. 
+- IoTeX blockchain protocol is managed by a decentralized community of delegates and voters who hold IOTX coins, who propose and vote on upgrades to the protocol. 
+
+- This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance. 
 
 
 # The Life of A Proposal
@@ -15,6 +17,8 @@ IoTeX blockchain protocol is managed by a decentralized community of delegates a
 
 # Mainnet Deployement
 `RotatableWeightedVPS` - [io1476tz4nx8v8qc5xdpu3hclk0uyanus6x2laddq](https://www.iotexscan.io/address/io1476tz4nx8v8qc5xdpu3hclk0uyanus6x2laddq)
+
 `OffChainIssueRegistration` - [TBD](TBD)
+
 `AdhocIssueSheet` - [TBD](TBD)
 
