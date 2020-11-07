@@ -3,7 +3,7 @@
 IoTeX blockchain protocol is managed by a decentralized community of delegates and voters who hold IOTX coins, who propose and vote on upgrades to the protocol. This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance. 
 
 
-# The Life of a Proposal
+# The Life of A Proposal
 1. **Anyone** can make a proposal via [`register`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffChainIssueRegistration.sol#L48) which will be recorded [here](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol).
 
 2. The whitelisted accounts can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.
