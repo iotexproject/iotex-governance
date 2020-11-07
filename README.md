@@ -10,7 +10,7 @@ IoTeX blockchain protocol is managed by a decentralized community of delegates a
 
 3. Once it is started, voters can vote via [`vote`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffchainIssue.sol#L119).
 
-4. Behind the scene, IoTeX's stakeholders and voters information are injected into [`RotatableWeightedVPS`](https://github.com/iotexproject/IoTeXVitaTokenContract/tree/master/contracts/voting) every 25 hours. `RotatableWeightedVPS` - considered as a system contract - is used by [VITA claim](https://iotex.io/vita) and [poll](https://member.iotex.io).
+4. Behind the scene, IoTeX's stakeholders and voters information are injected into [`RotatableWeightedVPS`](https://github.com/iotexproject/iotex-governance/tree/master/contracts/VPS) every 25 hours. `RotatableWeightedVPS` - considered as a system contract - is used by [VITA claim](https://iotex.io/vita) and [poll](https://member.iotex.io).
 
 
 # Mainnet Deployement
