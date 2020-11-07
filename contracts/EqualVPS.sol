@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+// This contract implements one strategy for voting power.
 // As long as one stakes N IOTX within an account, this account has 1 vote power.
 
 import "./library/VotingPowerSystem.sol";

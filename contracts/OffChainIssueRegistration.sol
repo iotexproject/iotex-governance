@@ -1,5 +1,9 @@
 pragma solidity ^0.4.24;
 
+// This contract is the main entrance for IoTeX's governance framework. By invoking
+// `register`, anyone can make a proposal which will be approved by the commitee before
+// it becomes available to voters.
+
 import "./library/IssueSheet.sol";
 import "./library/Ownable.sol";
 import "./library/Pausable.sol";

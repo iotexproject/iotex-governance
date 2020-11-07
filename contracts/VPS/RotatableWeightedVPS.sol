@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./WeightedVPS.sol";
 import "./ViewBasedVPS.sol";
-import "../ownership/Whitelist.sol";
+import "../library/Whitelist.sol";
 
 contract RotatableWeightedVPS is ViewBasedVPS, Whitelist {
     struct WVPS {

@@ -1,5 +1,7 @@
 pragma solidity ^0.4.22;
 
+// This contract implements the storage and management of a single proposal (known as issue).
+
 import "./library/ERC1202.sol";
 import "./library/Ownable.sol";
 import "./library/VotingPowerSystem.sol";

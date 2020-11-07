@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+// This contract implements the storage and management of proposals (known as issue).
+
 import "./library/IssueSheet.sol";
 import "./library/Ownable.sol";
 import "./library/Pausable.sol";

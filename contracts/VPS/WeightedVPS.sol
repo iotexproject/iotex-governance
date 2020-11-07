@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "../lifecycle/Pausable.sol";
-import "../math/SafeMath.sol";
-import "../ownership/Whitelist.sol";
-import "./VotingPowerSystem.sol";
+import "../library/SafeMath.sol";
+import "../library/VotingPowerSystem.sol";
+import "../library/Whitelist.sol";
+import "../library/Pausable.sol";
 
 contract WeightedVPS is VotingPowerSystem, Whitelist, Pausable {
     using SafeMath for uint256;
@@ -12,10 +12,10 @@ contract WeightedVPS is VotingPowerSystem, Whitelist, Pausable {
         bool flag;
     }
 
-    mapping(address => Power) private votingPowers;
-    address[] private voterAddrs;
+    mapping(address => Power) public votingPowers;
+    address[] public voterAddrs;
     bool public canUpdateVotingPower;
-    uint256 private powerInTotal;
+    uint256 public powerInTotal;
 
     modifier votingPowerUpdatable() {
         require(canUpdateVotingPower);
@@ -67,7 +67,7 @@ contract WeightedVPS is VotingPowerSystem, Whitelist, Pausable {
         return votingPowers[_voter].value;
     }
 
-    function voters(uint256 _offset, uint256 _limit) external whenNotPaused view returns (address[] voters_) {
+    function voters(uint256 _offset, uint256 _limit) public whenNotPaused view returns (address[] voters_) {
         require(_limit <= 200);
         if (_limit == 0 || _offset >= voterAddrs.length) {
             return voters_;

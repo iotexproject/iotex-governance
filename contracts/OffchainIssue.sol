@@ -1,5 +1,9 @@
 pragma solidity ^0.4.22;
 
+// This contract implements the management of one proposals (known as issue) in an offchain manner,
+// indicating the proposal details actually are stored offchain, e.g., on IPFS, while the hash and _uri
+// of the details are stored in the contract.
+
 import "./library/ERC1202.sol";
 import "./library/Ownable.sol";
 import "./library/VotingPowerSystem.sol";

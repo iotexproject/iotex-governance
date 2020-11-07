@@ -95,5 +95,9 @@ module.exports = {
       //  evmVersion: "byzantium"
       // }
     }
-  }
+  },
+
+  plugins: [
+  'truffle-plugin-solhint'
+  ]
 }

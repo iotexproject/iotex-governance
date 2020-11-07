@@ -1,0 +1,392 @@
+{
+  "contractName": "ViewBasedVPS",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "voter",
+          "type": "address"
+        }
+      ],
+      "name": "powerOf",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "totalPower",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "offset",
+          "type": "uint256"
+        },
+        {
+          "name": "limit",
+          "type": "uint256"
+        }
+      ],
+      "name": "voters",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "voters",
+          "type": "address[]"
+        }
+      ],
+      "name": "powersOf",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "voter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "power",
+          "type": "uint256"
+        }
+      ],
+      "name": "SetVotingPower",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "viewID",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.4.24;\n\nimport \"../library/VotingPowerSystem.sol\";\n\n/**\n * @title ViewBasedVPS\n * @dev abstract contract which extends VotingPowerSystem\n */\ncontract ViewBasedVPS is VotingPowerSystem {\n    function viewID() public view returns (uint256);\n}\n",
+  "sourcePath": "/Users/rc7/work/src/github.com/iotexproject/iotex-governance/contracts/VPS/ViewBasedVPS.sol",
+  "ast": {
+    "absolutePath": "/Users/rc7/work/src/github.com/iotexproject/iotex-governance/contracts/VPS/ViewBasedVPS.sol",
+    "exportedSymbols": {
+      "ViewBasedVPS": [
+        3773
+      ]
+    },
+    "id": 3774,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3764,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:9"
+      },
+      {
+        "absolutePath": "/Users/rc7/work/src/github.com/iotexproject/iotex-governance/contracts/library/VotingPowerSystem.sol",
+        "file": "../library/VotingPowerSystem.sol",
+        "id": 3765,
+        "nodeType": "ImportDirective",
+        "scope": 3774,
+        "sourceUnit": 4637,
+        "src": "26:42:9",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3766,
+              "name": "VotingPowerSystem",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4636,
+              "src": "184:17:9",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_VotingPowerSystem_$4636",
+                "typeString": "contract VotingPowerSystem"
+              }
+            },
+            "id": 3767,
+            "nodeType": "InheritanceSpecifier",
+            "src": "184:17:9"
+          }
+        ],
+        "contractDependencies": [
+          4636
+        ],
+        "contractKind": "contract",
+        "documentation": "@title ViewBasedVPS\n@dev abstract contract which extends VotingPowerSystem",
+        "fullyImplemented": false,
+        "id": 3773,
+        "linearizedBaseContracts": [
+          3773,
+          4636
+        ],
+        "name": "ViewBasedVPS",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 3772,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "viewID",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3768,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "223:2:9"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 3771,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3770,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3772,
+                  "src": "247:7:9",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3769,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "247:7:9",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "246:9:9"
+            },
+            "scope": 3773,
+            "src": "208:48:9",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 3774,
+        "src": "159:99:9"
+      }
+    ],
+    "src": "0:259:9"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/rc7/work/src/github.com/iotexproject/iotex-governance/contracts/VPS/ViewBasedVPS.sol",
+    "exportedSymbols": {
+      "ViewBasedVPS": [
+        3773
+      ]
+    },
+    "id": 3774,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3764,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:9"
+      },
+      {
+        "absolutePath": "/Users/rc7/work/src/github.com/iotexproject/iotex-governance/contracts/library/VotingPowerSystem.sol",
+        "file": "../library/VotingPowerSystem.sol",
+        "id": 3765,
+        "nodeType": "ImportDirective",
+        "scope": 3774,
+        "sourceUnit": 4637,
+        "src": "26:42:9",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3766,
+              "name": "VotingPowerSystem",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4636,
+              "src": "184:17:9",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_VotingPowerSystem_$4636",
+                "typeString": "contract VotingPowerSystem"
+              }
+            },
+            "id": 3767,
+            "nodeType": "InheritanceSpecifier",
+            "src": "184:17:9"
+          }
+        ],
+        "contractDependencies": [
+          4636
+        ],
+        "contractKind": "contract",
+        "documentation": "@title ViewBasedVPS\n@dev abstract contract which extends VotingPowerSystem",
+        "fullyImplemented": false,
+        "id": 3773,
+        "linearizedBaseContracts": [
+          3773,
+          4636
+        ],
+        "name": "ViewBasedVPS",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 3772,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "viewID",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3768,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "223:2:9"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 3771,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3770,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3772,
+                  "src": "247:7:9",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3769,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "247:7:9",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "246:9:9"
+            },
+            "scope": 3773,
+            "src": "208:48:9",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 3774,
+        "src": "159:99:9"
+      }
+    ],
+    "src": "0:259:9"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.18",
+  "updatedAt": "2020-11-07T17:26:47.618Z",
+  "devdoc": {
+    "methods": {},
+    "title": "ViewBasedVPS"
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
