@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+// As long as one stakes N IOTX within an account, this account has 1 vote power.
+
 import "./library/VotingPowerSystem.sol";
 import "./library/Whitelist.sol";
 
