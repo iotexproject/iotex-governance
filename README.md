@@ -20,7 +20,7 @@ IoTeX blockchain protocol is managed by a decentralized community of delegates a
 
 `OffChainIssueRegistration` - [io17nq7vnm3wcs5a2cmhwhcnhwtwv4s6lxuv7qqj5](https://www.iotexscan.io/address/io17nq7vnm3wcs5a2cmhwhcnhwtwv4s6lxuv7qqj5)
 
-`AdhocIssueSheet` - [TBD](TBD)
+`AdhocIssueSheet` - [io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9](https://www.iotexscan.io/address/io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9)
 
 # Development
 
