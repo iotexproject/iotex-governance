@@ -26,7 +26,7 @@ ioctl contract test function io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9 b.abi get
 --with-arguments '{"_offset":"0", "_limit":"10"}'
 ```
 
-**2. Once registered on the contract, please file an issue like [this](https://github.com/iotexproject/iotex-governance/issues/7)) with the following meta information so member.iotex.io/polls will display your proposal.
+**2. Once registered on the contract, please file an issue like [this](https://github.com/iotexproject/iotex-governance/issues/7)) with the following meta information so member.iotex.io/polls will display your proposal.**
 
 **3. The whitelisted accounts can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.**
 
