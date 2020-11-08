@@ -5,15 +5,15 @@ IoTeX blockchain protocol is managed by a decentralized community of delegates a
 # Overview
 A "proposal" is called an "issue" in this governance framework, which is composed of the four main components:
 - `OffChainIssueRegistration` serves as the "registration desk" of all issues that anyone can propose
-- After creation, an instance of `OffchainIssue` will be created that have all details about a proposal, i.e., the url to the proposal, hash its content, when to start/stop and so on. Once the issue is started, voters can vote via https://member.iotex.io/polls
-- `AdhocIssueSheet` is the storage and manager of all issues which can be approved/started/paused/ended by the commitee members.
-- `RotatableWeightedVPS` records all staking information in IoTeX's nsv2 subprotocol every 25 hours, that tells an `OffchainIssue` how to count votes.
+- After creation, an instance of `OffchainIssue` will be created that have all details about a proposal, i.e., the URL to the proposal, hash its content, when to start/stop, and so on. Once the issue is started, voters can vote via https://member.iotex.io/polls
+- `AdhocIssueSheet` is the storage and manager of all issues which can be approved/started/paused/ended by the committee members.
+- `RotatableWeightedVPS` records all staking information in IoTeX's nsv2 subprotocol every 25 hours, which tells an `OffchainIssue` how to count votes.
 
 ![](arch.png)
 
 
 # The Life of A Proposal
-**1. Anyone can make a proposal via [`register`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffChainIssueRegistration.sol#L48) which will be recorded [here](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol).**
+**1. Anyone can propose by invoking [`register`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffChainIssueRegistration.sol#L48) which will be recorded [here](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol).**
 
 For example, one can use ioctl to register as below where `a.abi` is the ABI of `OffChainIssueRegistration` which can be found here [https://github.com/iotexproject/iotex-governance/blob/master/build/contracts/OffChainIssueRegistration.json#L3]:
 ```
