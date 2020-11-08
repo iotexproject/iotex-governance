@@ -26,7 +26,9 @@ ioctl contract test function io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9 b.abi get
 --with-arguments '{"_offset":"0", "_limit":"10"}'
 ```
 
-**2. The whitelisted accounts can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.**
+**2. Once registered on the contract, please file an issue like [this](https://github.com/iotexproject/iotex-governance/issues/7)) with the following meta information so member.iotex.io/polls will display your proposal.
+
+**3. The whitelisted accounts can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.**
 
 Some examples are given below where `b.abi` is the ABI of `AdhocIssueSheet` which can be found here [https://github.com/iotexproject/iotex-governance/blob/master/build/contracts/AdhocIssueSheet.json#L3]:
 ```
@@ -40,7 +42,7 @@ ioctl contract test function io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9 b.abi app
 ioctl contract invoke function io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9 b.abi startIssue --with-arguments '{"_issue":"0xae1443e2966539585780b9971018fa413f3c4c5e"}'
 ```
 
-**3. Once it is started, voters can vote via [`vote`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffchainIssue.sol#L119).**
+**4. Once it is started, voters can vote via [`vote`](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/OffchainIssue.sol#L119).**
 
 Behind the scene, IoTeX's stakeholders and voters information are injected into [`RotatableWeightedVPS`](https://github.com/iotexproject/iotex-governance/tree/master/contracts/VPS) every 25 hours. `RotatableWeightedVPS` - considered as a system contract - is used by [VITA claim](https://iotex.io/vita) and [poll](https://member.iotex.io).
 
