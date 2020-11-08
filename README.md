@@ -1,8 +1,15 @@
 # Governance Framework of IoTeX Blockchain Protocol
 
-- IoTeX blockchain protocol is managed by a decentralized community of delegates and voters who hold IOTX coins, who propose and vote on upgrades to the protocol. This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance.
+IoTeX blockchain protocol is managed by a decentralized community of delegates and voters who hold IOTX coins, who propose and vote on upgrades to the protocol. This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance.
 
-- This is the governance framework for [IoTeX](https://iotex.io) blockchain protocol which extends [EIP1202](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1202.md), and empowers community governance.
+# Overview
+A "proposal" is called an "issue" in this governance framework, which is composed of the four main components:
+- `OffChainIssueRegistration` serves as the "registration desk" of all issues that anyone can propose
+- After creation, an instance of `OffchainIssue` will be created that have all details about a proposal, i.e., the url to the proposal, hash its content, when to start/stop and so on. Once the issue is started, voters can vote via https://member.iotex.io/polls
+- `AdhocIssueSheet` is the storage and manager of all issues which can be approved/started/paused/ended by the commitee members.
+- `RotatableWeightedVPS` records all staking information in IoTeX's nsv2 subprotocol every 25 hours, that tells an `OffchainIssue` how to count votes.
+
+![](arch.png)
 
 
 # The Life of A Proposal
@@ -19,7 +26,7 @@ ioctl contract test function io1j05ta0krxvpwc4kv2duyjfuyxglqyxkasp3pm9 b.abi get
 --with-arguments '{"_offset":"0", "_limit":"10"}'
 ```
 
-**2. The whitelisted accounts (belong to the commitee) can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.**
+**2. The whitelisted accounts can [accept](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L49) this proposal, [start](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L67), [pause](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L79), [stop](https://github.com/iotexproject/IOTX-EIP-1202-contracts/blob/master/contracts/AdhocIssueSheet.sol#L103) the proposal.**
 
 Some examples are given below where `b.abi` is the ABI of `AdhocIssueSheet` which can be found here [https://github.com/iotexproject/iotex-governance/blob/master/build/contracts/AdhocIssueSheet.json#L3]:
 ```
